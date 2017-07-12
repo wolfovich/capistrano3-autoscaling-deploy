@@ -25,7 +25,7 @@ end
 
 namespace :deploy do
   after 'deploy:finished', :check_autoscaling_hooks do
-    invoke 'autoscaling_deploy:unfreeze_auto_scaling_group'
+    #invoke 'autoscaling_deploy:unfreeze_auto_scaling_group'
   end
 end
 
@@ -46,6 +46,7 @@ namespace :autoscaling_deploy do
 
   desc 'Unfreeze Auto Scaling Group.'
   task :unfreeze_auto_scaling_group do
+    return unless fetch(:aws_options)
     fetch(:aws_options).each do |options|
       region = options[:aws_region]
       key = fetch(:aws_access_key_id)
@@ -55,7 +56,7 @@ namespace :autoscaling_deploy do
       instance_type = options[:aws_instance_type]
       security_groups = options[:aws_security_groups]
       create_ami_image(region, key, secret, group_name, ip_type, instance_type, security_groups)
-      puts "Unfreeze Auto Scaling Group. #{group_name}"
+      puts "Create AMI image for asg #{group_name}"
     end
 
     #autoscaling_max_instances = fetch(:aws_autoscaling_max_instances)
