@@ -46,8 +46,9 @@ namespace :autoscaling_deploy do
 
   desc 'Unfreeze Auto Scaling Group.'
   task :unfreeze_auto_scaling_group do
-    return unless fetch(:aws_options)
-    fetch(:aws_options).each do |options|
+    aws_options = fetch(:aws_options)
+    return if aws_options.nil?
+    aws_options.each do |options|
       region = options[:aws_region]
       key = fetch(:aws_access_key_id)
       secret = fetch(:aws_secret_access_key)
