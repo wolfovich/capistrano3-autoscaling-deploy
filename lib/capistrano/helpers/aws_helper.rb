@@ -8,6 +8,7 @@ module AwsHelper
     name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
     aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
     instance = fetch_autoscaling_group_instances(aws_region,  aws_autoscaling_group_name, aws_credentials).first
+    return unless instance.present?
     ec2 = Aws::EC2::Client.new(region: aws_region, credentials: aws_credentials)
 
     old_images = ec2.describe_images(filters: [

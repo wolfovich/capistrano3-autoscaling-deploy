@@ -44,7 +44,7 @@ namespace :autoscaling_deploy do
     update_auto_scale_group(region, key, secret, group_name, ip_type)
   end
 
-  desc 'Unfreeze Auto Scaling Group.'
+  desc 'Create AMI image for asg.'
   task :unfreeze_auto_scaling_group do
     aws_options = fetch(:aws_options)
     return if aws_options.nil?
