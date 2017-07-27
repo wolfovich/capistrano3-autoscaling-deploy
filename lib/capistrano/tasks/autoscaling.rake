@@ -56,7 +56,9 @@ namespace :autoscaling_deploy do
       ip_type = options[:aws_ip_type]
       instance_type = options[:aws_instance_type]
       security_groups = options[:aws_security_groups]
+      instance_name = options[:aws_instance_name]
       create_ami_image(region, key, secret, group_name, ip_type, instance_type, security_groups)
+      set_instances_name(region, key, secret, group_name, instance_name)
       puts "Create AMI image for asg #{group_name}"
     end
 

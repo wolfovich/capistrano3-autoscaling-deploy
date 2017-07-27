@@ -3,6 +3,18 @@ require 'aws-sdk'
 module AwsHelper
   IP_TYPES = %w(public_ip_address public_dns_name private_ip_address private_dns_name)
 
+  def set_instances_name(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name, aws_instance_name)
+    puts 'Setup names'
+    name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
+    aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
+    ec2 = Aws::EC2::Resource.new(region: aws_region, credentials: aws_credentials)
+    instance_ids = fetch_autoscaling_group_instances(aws_region,  aws_autoscaling_group_name, aws_credentials)
+    instance_ids.each_with_index do |instance_id, i|
+      name = "#{aws_instance_name} #{i}"
+      ec2.instance(instance_id).create_tags(tags: [{key: 'Name', value: name}])
+    end
+  end
+
   def create_ami_image(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name, aws_ip_type, aws_instance_type, aws_security_groups)
     puts 'Create AMI image'
     name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
