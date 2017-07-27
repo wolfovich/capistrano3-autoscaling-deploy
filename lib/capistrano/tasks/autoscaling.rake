@@ -45,7 +45,7 @@ namespace :autoscaling_deploy do
       secret = fetch(:aws_secret_access_key)
       group_name = options[:aws_autoscaling_group_name]
       ec2_instances(region, key, secret, group_name).each do |instance|
-        puts "#{get_name_from_tags(instance.tags)}:  #{user}@#{instance.public_dns_name} -i #{ssh_key} "
+        puts "#{get_name_from_tags(instance.tags)}:  ssh #{user}@#{instance.public_dns_name} -i #{ssh_key} "
       end
     end
   end
