@@ -3,15 +3,31 @@ require 'aws-sdk'
 module AwsHelper
   IP_TYPES = %w(public_ip_address public_dns_name private_ip_address private_dns_name)
 
+  def get_name_from_tags(tags)
+    tags.each do |tag|
+      return tag.value if tag.key == 'Name'
+    end
+  end
+
+  def ec2_instances(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name)
+    aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
+    ec2 = Aws::EC2::Resource.new(region: aws_region, credentials: aws_credentials)
+    instance_ids = fetch_autoscaling_group_instances(aws_region,  aws_autoscaling_group_name, aws_credentials)
+    instance_ids.map do |instance, i|
+      ec2.instance(instance.instance_id)
+    end
+  end
+
+
   def set_instances_name(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name, aws_instance_name)
     puts 'Setup names'
     name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
     aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
     ec2 = Aws::EC2::Resource.new(region: aws_region, credentials: aws_credentials)
     instance_ids = fetch_autoscaling_group_instances(aws_region,  aws_autoscaling_group_name, aws_credentials)
-    instance_ids.each_with_index do |instance_id, i|
+    instance_ids.each_with_index do |instance, i|
       name = "#{aws_instance_name} #{i}"
-      ec2.instance(instance_id).create_tags(tags: [{key: 'Name', value: name}])
+      ec2.instance(instance.instance_id).create_tags(tags: [{key: 'Name', value: name}])
     end
   end
 
@@ -20,7 +36,7 @@ module AwsHelper
     name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
     aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
     instance = fetch_autoscaling_group_instances(aws_region,  aws_autoscaling_group_name, aws_credentials).first
-    return unless instance.present?
+    return if instance.nil?
     ec2 = Aws::EC2::Client.new(region: aws_region, credentials: aws_credentials)
 
     old_images = ec2.describe_images(filters: [

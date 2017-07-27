@@ -33,6 +33,23 @@ namespace :autoscaling_deploy do
   include AwsHelper
   include CapHelper
 
+  desc 'Get list of runnin instances'
+  task :list do
+    aws_options = fetch(:aws_options)
+    return if aws_options.nil?
+    aws_options.each do |options|
+      region = options[:aws_region]
+      user = options[:aws_deploy_user]
+      ssh_key = options[:aws_ssh_key]
+      key = fetch(:aws_access_key_id)
+      secret = fetch(:aws_secret_access_key)
+      group_name = options[:aws_autoscaling_group_name]
+      ec2_instances(region, key, secret, group_name).each do |instance|
+        puts "#{get_name_from_tags(instance.tags)}:  #{user}@#{instance.public_dns_name} -i #{ssh_key} "
+      end
+    end
+  end
+
   desc 'Freeze Auto Scaling Group.'
   task :freeze_auto_scaling_group do
     region = fetch(:aws_region)
@@ -58,6 +75,7 @@ namespace :autoscaling_deploy do
       security_groups = options[:aws_security_groups]
       instance_name = options[:aws_instance_name]
       create_ami_image(region, key, secret, group_name, ip_type, instance_type, security_groups)
+
       set_instances_name(region, key, secret, group_name, instance_name)
       puts "Create AMI image for asg #{group_name}"
     end
