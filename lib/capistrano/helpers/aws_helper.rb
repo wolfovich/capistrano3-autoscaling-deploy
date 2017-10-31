@@ -31,7 +31,7 @@ module AwsHelper
     end
   end
 
-  def create_ami_image(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name, aws_ip_type, aws_instance_type, aws_security_groups)
+  def create_ami_image(aws_region, aws_access_key_id, aws_secret_access_key, aws_autoscaling_group_name, aws_ip_type, aws_instance_type, aws_security_groups, volume_size)
     puts 'Create AMI image'
     name = "#{aws_autoscaling_group_name}-AMI-#{Time.now.to_i}"
     aws_credentials = Aws::Credentials.new(aws_access_key_id, aws_secret_access_key)
@@ -55,7 +55,16 @@ module AwsHelper
                          dry_run: false,
                          instance_id: instance.instance_id, # required
                          name: name, # required
-                         no_reboot: true
+                         no_reboot: true,
+                         block_device_mappings: [
+                             {
+                                 device_name: "/dev/sda1",
+                                 ebs: {
+                                     volume_size: volume_size,
+                                     volume_type: "gp2", # accepts standard, io1, gp2, sc1, st1
+                                 },
+                             },
+                         ],
                      })
     ec2.create_tags({resources: [image.image_id],
                      tags: [
